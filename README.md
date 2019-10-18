@@ -69,12 +69,6 @@ granularity isn't needed. If it's hard to compress the threat model down to
 a reasonable size, that's another sign that it's too hard for your users to
 understand how to use your software securely.
 
-How to best organize the threat model will depend on the software being modeled,
-but remember that the invariants should be stated in language that the target
-audience understands, and it's better to be verbose than to miss finding bugs
-because of an incomplete threat model.
-
-
 ### Full-Disk Encryption Example
 
 Here's a very-incomplete example threat model for full-disk encryption software.
