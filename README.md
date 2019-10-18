@@ -29,9 +29,9 @@ like this has the following benefits.
 The threat model should have a clear target audience in mind, which could either
 be an end-user or a developer if the software is a library. The threat model
 consists of a series of **security invariants**, which are written in language
-and terms that the audience understands. These are the security properties that
-the user (or developer) should be able to safely rely on. For example,
-a security invariant for full-disk encryption software might be:
+that the audience understands. These are the security properties that the user
+(or developer) should be able to safely rely on. For example, a security
+invariant for full-disk encryption software might be:
 
 > If I use a strong password and an adversary obtains my encrypted disk while
 > my computer is turned off, they cannot learn anything about the contents.
