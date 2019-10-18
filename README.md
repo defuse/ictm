@@ -20,17 +20,18 @@ like this has the following benefits.
 3. It helps integrate forward-thinking security into the software development
    life cycle, since security is seen as a set of "features" that need to be
    planned in advance, rather than a seemingly-endless stream of problems that
-   turn up after the code has been written. Following this methodology forces
-   security engineers to consider the user experience and business outcomes.
+   turn up after the code has been written. Following this methodology also
+   forces security engineers to consider the user experience and business
+   outcomes.
 
 ## The Methodology
 
 The threat model should have a clear target audience in mind, which could either
-be an end-user or a developer (in case the software is a library). The threat
-model consists of a series of **security invariants**, which are written in
-language and terms that the audience understands. These are the security
-properties that the user (or developer) should be able to safely rely on. For
-example, a security invariant for full-disk encryption software might be:
+be an end-user or a developer if the software is a library. The threat model
+consists of a series of **security invariants**, which are written in language
+and terms that the audience understands. These are the security properties that
+the user (or developer) should be able to safely rely on. For example,
+a security invariant for full-disk encryption software might be:
 
 > If I use a strong password and an adversary obtains my encrypted disk while
 > my computer is turned off, they cannot learn anything about the contents.
@@ -41,18 +42,20 @@ assume they're getting some security property and they're actually not, that's
 a security bug, even if there's nothing wrong with your software. If you're
 having a hard time stating the security invariants in language your users can
 understand, that's a sign that it's too hard to understand how to use your
-software securely, so it's likely being used in insecure ways.
+software securely and it's likely being used in insecure ways.
 
-The opposite of a security invariant is a **known weakness**. The threat model
-is a natural place to document known security issues, primarily so that security
-auditor's don't waste time confirming already-known issues. A known weaknesses
-list can also be helpful to UX engineers aiming to accurately communicate the
-risks. Unlike other threat modeling methodologies, attacks and weaknesses are
-*not* the primary focus; it's okay for the known weaknesses list to be
-incomplete. An example for full-disk encryption software might be:
+The opposite of a security invariant is a **known weakness**. An example for
+full-disk encryption software might be:
 
 > If an adversary obtains my encrypted disk and then I receive it back from
 > them, I cannot be sure that they haven't modified the contents.
+
+The threat model is a natural place to document known security issues, primarily
+so that security auditors don't waste time confirming already-known issues.
+A known weaknesses list can also be helpful to UX engineers aiming to accurately
+communicate counterintuitive risks. Unlike other threat modeling methodologies,
+attacks and weaknesses are *not* the primary focus; it's okay for the known
+weaknesses list to be incomplete.
 
 Whether or not an attack is possible depends on how the software is being used
 and the capabilities of the attacker. There should be a separate security
@@ -72,7 +75,7 @@ audience understands, and it's better to be verbose than to miss finding bugs
 because of an incomplete threat model.
 
 
-### Example Threat Model
+### Full-Disk Encryption Example
 
 Here's a very-incomplete example threat model for full-disk encryption software.
 
@@ -162,7 +165,7 @@ model (or its more detailed documentation).
 
 ## Conclusion
 
-This threat modeling framework works better to...
+This threat modeling methodology works better to...
 
 **Ensure users' security expectations are being met.**
 
@@ -175,7 +178,7 @@ the threat model!
 
 **Help security auditors discover vulnerabilities and rate their severity.**
 
-The security invariants tell the security auditors what their attack goals are,
+The security invariants tell the security auditors what their attack targets are,
 i.e. any security vulnerability they find should be a violation of a security
 invariant. The invariants' preconditions tell them what they can assume as
 a valid starting point for an attack. The severity of a vulnerability can be
