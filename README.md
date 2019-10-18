@@ -51,7 +51,7 @@ full-disk encryption software might be:
 > them, I cannot be sure that they haven't modified the contents.
 
 The threat model is a natural place to document known security issues, primarily
-so that security auditors don't waste time confirming already-known issues.
+so that security auditors don't waste time confirming already-known problems.
 A known weaknesses list can also be helpful to UX engineers aiming to accurately
 communicate counterintuitive risks. Unlike other threat modeling methodologies,
 attacks and weaknesses are *not* the primary focus; it's okay for the known
