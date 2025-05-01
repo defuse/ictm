@@ -1,0 +1,13 @@
+body { display: flex; font-family: sans-serif; margin: 0; }
+#sidebar { width: 220px; padding: 1rem; background: #f5f5f5; border-right: 1px solid #ddd; }
+#main   { flex: 1; padding: 1rem; }
+h2 { margin-top: 2rem; }
+.item { padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 0.5rem; }
+.weakness { border-left: 4px solid #e2a03f; }
+.hidden { display: none; }
+.badge { display: inline-block; background: #eee; border-radius: 3px; padding: 0 4px; margin-right: 4px; font-size: 0.8em; }
+.severity-low    { background: #a0e3a0; }
+.severity-medium { background: #fad78e; }
+.severity-high   { background: #f29a9a; }
+#summary { font-style: italic; margin-bottom: 1rem; }
+fieldset { margin-bottom: 1rem; }

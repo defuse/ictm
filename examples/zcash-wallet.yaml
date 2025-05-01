@@ -1,0 +1,214 @@
+# Zcash Wallet App Threat Model for ICTM
+
+adversary_classes:
+  - id: "wallet_server"
+    name: "Lightwalletd & Server"
+    description: "Adversaries that compromise or observe the wallet’s backend services."
+  - id: "client_side"
+    name: "Client-side Apps"
+    description: "Adversaries that run code on the user’s device or observe its network traffic."
+  - id: "blockchain_observer"
+    name: "Blockchain Observer"
+    description: "Adversaries that only know the user’s addresses and can see the public blockchain."
+
+adversaries:
+  - id: "lightwalletd_compromising"
+    name: "Lightwalletd-Compromising Adversary"
+    classes: ["wallet_server", "client_side"]
+    capabilities:
+      - "complete control over the lightwalletd service"
+      - "intercept all network traffic"
+      - "install and run arbitrary apps on the user’s device"
+      - "know some of the user’s addresses"
+      - "cause accidental reorgs"
+    goals:
+      - "break any of the documented security invariants"
+
+  - id: "typical_adversary"
+    name: "Typical Adversary"
+    classes: ["wallet_server", "client_side"]
+    capabilities:
+      - "intercept all network traffic"
+      - "run code as apps on the user’s device"
+      - "read (but not write) lightwalletd memory"
+      - "know some of the user’s addresses"
+      - "cause accidental reorgs"
+    goals:
+      - "degrade security to Lightwalletd-Compromising levels if possible"
+
+  - id: "network_surveillance_adjacent_app"
+    name: "Network- and Adjacent-App Surveiling Adversary"
+    classes: ["client_side"]
+    capabilities:
+      - "intercept all network traffic"
+      - "run code as apps on the user’s device"
+      - "observe bandwidth side-channels"
+      - "know some of the user’s addresses"
+      - "cause accidental reorgs"
+    goals:
+      - "learn metadata about wallet use via traffic analysis"
+
+  - id: "address_knowing"
+    name: "Address-Knowing Adversary"
+    classes: ["blockchain_observer"]
+    capabilities:
+      - "know some of the user’s z- and t-addresses"
+      - "view the public blockchain"
+    goals:
+      - "infer timing and linkage of shielded transactions"
+
+scenarios:
+  - id: "default"
+    description: "Standard wallet usage with no additional assumptions."
+    always_on: true
+
+invariants:
+  # ===== Lightwalletd-Compromising invariants =====
+  - id: "no_remote_code_execution"
+    description: "Cannot execute arbitrary code on the user’s device."
+    adversaries: ["lightwalletd_compromising", "typical_adversary", "network_surveillance_adjacent_app", "address_knowing"]
+    scenarios: ["default"]
+
+  - id: "no_key_material_leak"
+    description: "Cannot learn any of the user’s cryptographic key material (seed phrase, viewing keys, spending keys)."
+    adversaries: ["lightwalletd_compromising", "typical_adversary", "network_surveillance_adjacent_app", "address_knowing"]
+    scenarios: ["default"]
+
+  - id: "no_fund_theft"
+    description: "Cannot steal or burn the user’s funds."
+    adversaries: ["lightwalletd_compromising", "typical_adversary", "network_surveillance_adjacent_app", "address_knowing"]
+    scenarios: ["default"]
+
+  - id: "no_unauthorized_send"
+    description: "Cannot make the user send funds they did not intend to."
+    adversaries: ["lightwalletd_compromising", "typical_adversary", "network_surveillance_adjacent_app", "address_knowing"]
+    scenarios: ["default"]
+
+  - id: "no_forced_unspendable"
+    description: "Cannot make funds unspendable by the user or recipient."
+    adversaries: ["lightwalletd_compromising", "typical_adversary", "network_surveillance_adjacent_app", "address_knowing"]
+    scenarios: ["default"]
+
+  - id: "no_incorrect_recipient"
+    description: "Cannot redirect funds to the wrong recipient."
+    adversaries: ["lightwalletd_compromising", "typical_adversary", "network_surveillance_adjacent_app", "address_knowing"]
+    scenarios: ["default"]
+
+  - id: "no_balance_leakage_initial"
+    description: "Cannot tell the user’s shielded balance on first connection."
+    adversaries: ["lightwalletd_compromising", "typical_adversary", "network_surveillance_adjacent_app", "address_knowing"]
+    scenarios: ["default"]
+
+  - id: "no_shielded_tx_leak"
+    description: "Cannot learn values, memos, or counterparties in shielded transactions."
+    adversaries: ["lightwalletd_compromising", "typical_adversary", "network_surveillance_adjacent_app", "address_knowing"]
+    scenarios: ["default"]
+
+  - id: "no_tx_spoofing"
+    description: "Cannot spoof send- or receive-transaction metadata (amount, memo, counterparty)."
+    adversaries: ["lightwalletd_compromising", "typical_adversary", "network_surveillance_adjacent_app", "address_knowing"]
+    scenarios: ["default"]
+
+  - id: "no_ui_tampering"
+    description: "Cannot make the app display false official-looking messages."
+    adversaries: ["lightwalletd_compromising", "typical_adversary", "network_surveillance_adjacent_app"]
+    scenarios: ["default"]
+
+  # ===== Typical Adversary invariants (same as above; none additional) =====
+
+  # ===== Network-Adj-App invariants =====
+  # (None stronger than Typical)
+
+  # ===== Address-Knowing invariants (subset of above) =====
+  - id: "no_shielded_timing_leak"
+    description: "Cannot tell when fully-shielded transactions occur."
+    adversaries: ["address_knowing"]
+    scenarios: ["default"]
+
+weaknesses:
+  # ===== Lightwalletd-Compromising weaknesses =====
+  - id: "false_positive_balance"
+    description: "Can make the wallet think there are more spendable funds by replaying transactions."
+    severity: "high"
+    adversaries: ["lightwalletd_compromising"]
+    scenarios: ["default"]
+
+  - id: "false_negative_balance"
+    description: "Can make the wallet think there are fewer spendable funds by omitting transactions."
+    severity: "high"
+    adversaries: ["lightwalletd_compromising"]
+    scenarios: ["default"]
+
+  - id: "false_tx_success"
+    description: "Can falsely indicate a sent or received transaction succeeded when it failed."
+    severity: "medium"
+    adversaries: ["lightwalletd_compromising"]
+    scenarios: ["default"]
+
+  - id: "false_tx_failure"
+    description: "Can falsely indicate a sent or received transaction failed when it succeeded."
+    severity: "medium"
+    adversaries: ["lightwalletd_compromising"]
+    scenarios: ["default"]
+
+  # ===== Network-Adj-App weaknesses =====
+  - id: "memo_bandwidth_leak_receive"
+    description: "Bandwidth side-channels leak when memos for received shielded transactions are fetched."
+    severity: "low"
+    adversaries: ["network_surveillance_adjacent_app"]
+    scenarios: ["default"]
+
+  - id: "memo_bandwidth_leak_send"
+    description: "Bandwidth side-channels leak when sending shielded transactions."
+    severity: "low"
+    adversaries: ["network_surveillance_adjacent_app"]
+    scenarios: ["default"]
+
+  - id: "tx_count_leak"
+    description: "Can count how many shielded transactions are sent or received over time."
+    severity: "low"
+    adversaries: ["network_surveillance_adjacent_app"]
+    scenarios: ["default"]
+
+  - id: "address_activity_leak"
+    description: "Can test ownership of an address via dust-attack and bandwidth correlation."
+    severity: "medium"
+    adversaries: ["network_surveillance_adjacent_app"]
+    scenarios: ["default"]
+
+  - id: "ip_geolocation"
+    description: "Can learn the user’s identity or location from IP address."
+    severity: "low"
+    adversaries: ["network_surveillance_adjacent_app"]
+    scenarios: ["default"]
+
+  - id: "pattern_traffic_leak"
+    description: "Can infer usage patterns (e.g. recurring payments) from traffic spikes."
+    severity: "low"
+    adversaries: ["network_surveillance_adjacent_app"]
+    scenarios: ["default"]
+
+  - id: "update_blockage"
+    description: "Can silently block wallet security updates or notices by blocking connections."
+    severity: "medium"
+    adversaries: ["network_surveillance_adjacent_app"]
+    scenarios: ["default"]
+
+  # ===== Address-Knowing weaknesses =====
+  - id: "dust_note_leak"
+    description: "Dust-attack lets adversary know when the user spends shielded funds sent by them."
+    severity: "medium"
+    adversaries: ["address_knowing"]
+    scenarios: ["default"]
+
+  - id: "transparent_balance_leak"
+    description: "Can tell when t-address transactions occur and see transparent balance."
+    severity: "low"
+    adversaries: ["address_knowing"]
+    scenarios: ["default"]
+
+  - id: "app_fingerprinting"
+    description: "Note-selection patterns can fingerprint this wallet app."
+    severity: "low"
+    adversaries: ["address_knowing"]
+    scenarios: ["default"]

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Threat Model</title>
+  {% if inline_assets %}
+    <style>{{ style_css | safe }}</style>
+    <script>{{ script_js | safe }}</script>
+  {% else %}
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js"></script>
+  {% endif %}
+  <style>body{margin:0;font-family:sans-serif;}#sidebar{width:220px;padding:1rem;background:#f5f5f5;border-right:1px solid#ddd;float:left;}#main{margin-left:240px;padding:1rem;}fieldset{margin-bottom:1rem;}h2{margin-top:2rem;}.item{padding:.5rem;border:1px solid#ddd;border-radius:4px;margin-bottom:.5rem;}.weakness{border-left:4px solid#e2a03f;}.hidden{display:none;}.badge{display:inline-block;background:#eee;border-radius:3px;padding:0 4px;margin-right:4px;font-size:.8em;}.severity-low{background:#a0e3a0;}.severity-medium{background:#fad78e;}.severity-high{background:#f29a9a;}#summary{font-style:italic;margin-bottom:1rem;}</style>
+</head>
+<body>
+  <aside id="sidebar">
+    <fieldset><legend><strong>Adversary Classes</strong></legend>
+      {% for class in model.adversary_classes %}
+      <details open><summary>{{ class.name }}</summary>
+        {% for adv in model.adversaries %}{% if class.id in adv.classes %}
+        <label><input type="checkbox" class="filter-adv" value="{{ adv.id }}" checked> {{ adv.name }}</label><br>
+        {% endif %}{% endfor %}
+      </details>
+      {% endfor %}
+    </fieldset>
+    <fieldset><legend><strong>Scenarios</strong></legend>
+      {% for sce in model.scenarios %}
+      <label><input type="checkbox" class="filter-sce" value="{{ sce.id }}" checked{% if sce.always_on %} disabled{% endif %}> {{ sce.description }}</label><br>
+      {% endfor %}
+    </fieldset>
+  </aside>
+  <main id="main">
+    <div id="summary">Viewing with <span id="sel-advs"></span> in <span id="sel-sces"></span>. Guarantees: <span id="count-inv"></span>, Weaknesses: <span id="count-weak"></span>.</div>
+    <h2>What we guarantee</h2>
+    <div id="invariants">
+      {% for inv in model.invariants %}
+      <div class="item invariant" data-adversaries="{% for a in inv.adversaries %}{{ a }} {% endfor %}" data-scenarios="{% for s in inv.scenarios %}{{ s }} {% endfor %}">
+        <strong>{{ inv.id }}</strong><br>
+        {{ inv.description }}<br>
+        {% for a in inv.adversaries %}{% for adv in model.adversaries %}{% if adv.id == a %}<span class="badge">{{ adv.name }}</span>{% endif %}{% endfor %}{% endfor %}<br>
+        {% for s in inv.scenarios %}{% for sce in model.scenarios %}{% if sce.id == s %}<span class="badge">Scenario: {{ sce.description }}</span>{% endif %}{% endfor %}{% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+    <h2>What we don’t guarantee</h2>
+    <div id="weaknesses">
+      {% for w in model.weaknesses %}
+      <div class="item weakness" data-adversaries="{% for a in w.adversaries %}{{ a }} {% endfor %}" data-scenarios="{% for s in w.scenarios %}{{ s }} {% endfor %}">
+        <strong>{{ w.id }}</strong><br>
+        {{ w.description }}<br>
+        <span class="badge severity-{{ w.severity }}">Severity: {{ w.severity }}</span><br>
+        {% for a in w.adversaries %}{% for adv in model.adversaries %}{% if adv.id == a %}<span class="badge">Exposed to: {{ adv.name }}</span>{% endif %}{% endfor %}{% endfor %}<br>
+        {% for s in w.scenarios %}{% for sce in model.scenarios %}{% if sce.id == s %}<span class="badge">Scenario: {{ sce.description }}</span>{% endif %}{% endfor %}{% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </main>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      function checkedValues(selector) { return Array.from(document.querySelectorAll(selector + ':checked')).map(el => el.value); }
+      function updateView() {
+        const selAdvs = checkedValues('.filter-adv'); const selSces = checkedValues('.filter-sce');
+        document.getElementById('sel-advs').textContent = selAdvs.map(id => document.querySelector(`.filter-adv[value="${id}"]`).parentNode.textContent.trim()).join(', ');
+        document.getElementById('sel-sces').textContent = selSces.map(id => document.querySelector(`.filter-sce[value="${id}"]`).parentNode.textContent.trim()).join(', ');
+        let invCount=0; document.querySelectorAll('.invariant').forEach(div => { const advs=div.dataset.adversaries.split(' '); const sces=div.dataset.scenarios.split(' '); const ok=selAdvs.some(a=>advs.includes(a))&&selSces.some(s=>sces.includes(s)); div.classList.toggle('hidden',!ok); if(ok)invCount++; }); document.getElementById('count-inv').textContent=invCount;
+        let weakCount=0; document.querySelectorAll('.weakness').forEach(div=> { const advs=div.dataset.adversaries.split(' '); const sces=div.dataset.scenarios.split(' '); const ok=selAdvs.some(a=>advs.includes(a))&&selSces.some(s=>sces.includes(s)); div.classList.toggle('hidden',!ok); if(ok)weakCount++; }); document.getElementById('count-weak').textContent=weakCount;
+      }
+      document.querySelectorAll('.filter-adv, .filter-sce').forEach(el => el.addEventListener('change', updateView));
+      updateView();
+    });
+  </script>
+</body>
+</html>
