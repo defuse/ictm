@@ -1,0 +1,59 @@
+adversary_classes:
+  - id: "network"    # unchanged
+    name: "Network-level"
+    description: "Attacks that originate on the network layer."
+  - id: "insider"
+    name: "Insider"
+    description: "Attacks by someone with privileged access."
+
+adversaries:
+  - id: "remote-attacker"
+    name: "Remote network attacker"
+    classes: ["network"]
+    capabilities:
+      - "can sniff TLS traffic"
+      - "can perform MitM"
+    goals:
+      - "steal user data"
+
+  - id: "malicious-admin"
+    name: "Malicious administrator"
+    classes: ["insider"]
+    capabilities:
+      - "can read and modify config store"
+      - "can inject arbitrary binaries"
+    goals:
+      - "exfiltrate logs"
+
+scenarios:
+  - id: "multi-user"
+    description: "Multiple untrusted users share the service."
+    always_on: false
+
+  - id: "background-sync"
+    description: "App syncs in the background when idle."
+    always_on: true
+
+invariants:
+  - id: "record-signatures"
+    description: "Every record written to disk is signed with the server’s private key."
+    adversaries: ["remote-attacker", "malicious-admin"]
+    scenarios:  ["multi-user"]
+
+  - id: "config-at-rest-encryption"
+    description: "Configuration files on disk are AES-GCM encrypted."
+    adversaries: ["malicious-admin"]
+    scenarios:  ["background-sync"]
+
+weaknesses:
+  - id: "weak-logs"
+    description: "Legacy logs still hashed with SHA-1."
+    severity:    "low"
+    adversaries: ["remote-attacker"]
+    scenarios:  ["multi-user"]
+
+  - id: "no-tamper-evidence"
+    description: "No tamper-evidence on client-side cache files."
+    severity:    "medium"
+    adversaries: ["malicious-admin"]
+    scenarios:  ["background-sync"]

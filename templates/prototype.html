@@ -1,0 +1,55 @@
+<!-- Sidebar -->
+<aside id="sidebar">
+  <fieldset>
+    <legend><strong>Adversary Classes</strong></legend>
+    <details open>
+      <summary>Network-level</summary>
+      <label><input type="checkbox" class="filter-adv" value="remote-attacker" checked> Remote network attacker</label><br>
+    </details>
+    <details open>
+      <summary>Insider</summary>
+      <label><input type="checkbox" class="filter-adv" value="malicious-admin" checked> Malicious administrator</label><br>
+    </details>
+  </fieldset>
+
+  <fieldset>
+    <legend><strong>Scenarios</strong></legend>
+    <label><input type="checkbox" class="filter-sce" value="multi-user" checked> Multi-user</label><br>
+    <label><input type="checkbox" class="filter-sce" value="background-sync" checked disabled> Background-sync</label><br>
+  </fieldset>
+</aside>
+
+<!-- Main Content -->
+<main id="main">
+  <div id="summary">
+    Viewing with <span id="sel-advs">Remote network attacker, Malicious administrator</span>
+    in <span id="sel-sces">Multi-user, Background-sync</span>. 
+    Guarantees: <span id="count-inv">1</span>, Weaknesses: <span id="count-weak">1</span>.
+  </div>
+
+  <h2>What we guarantee</h2>
+  <div id="invariants">
+    <div class="item invariant"
+         data-adversaries="remote-attacker malicious-admin"
+         data-scenarios="multi-user">
+      <strong>record-signatures</strong><br>
+      Every record written to disk is signed with the server’s private key.<br>
+      <span class="badge">Remote network attacker</span>
+      <span class="badge">Malicious administrator</span><br>
+      <span class="badge">Scenario: Multi-user</span>
+    </div>
+  </div>
+
+  <h2>What we don’t guarantee</h2>
+  <div id="weaknesses">
+    <div class="item weakness"
+         data-adversaries="remote-attacker"
+         data-scenarios="multi-user">
+      <strong>weak-logs</strong><br>
+      Legacy logs still hashed with SHA-1.<br>
+      <span class="badge severity-low">Severity: low</span><br>
+      <span class="badge">Exposed to: Remote network attacker</span><br>
+      <span class="badge">Scenario: Multi-user</span>
+    </div>
+  </div>
+</main>
